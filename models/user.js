@@ -1,9 +1,11 @@
 import database from 'infra/database';
 import { NotFoundError, ValidationError } from 'infra/errors.js';
+import password from './password.js';
 
 async function create(userInput) {
   await validateUniqueEmail(userInput.email);
   await validateUniqueUsername(userInput.username);
+  await hashPasswordInObject(userInput);
 
   const newUser = await runInsertQuery(userInput);
   return newUser;
@@ -26,6 +28,11 @@ async function create(userInput) {
         action: 'Utilize outro username para realizar o cadastro',
       });
     }
+  }
+
+  async function hashPasswordInObject(userInput) {
+    const hashedPassword = await password.hash(userInput.password);
+    userInput.password = hashedPassword;
   }
 
   async function runInsertQuery(userInput) {
@@ -60,7 +67,7 @@ async function findOneByEmail(email) {
   const results = await database.query({
     text: `
       SELECT
-        id, username, email, created_at, updated_at
+        id, username, email, password, created_at, updated_at
       FROM
         users
       WHERE
@@ -77,7 +84,7 @@ async function findOneByUsername(username) {
   const results = await database.query({
     text: `
       SELECT
-        id, username, email, created_at, updated_at
+        id, username, email, password, created_at, updated_at
       FROM
         users
       WHERE
