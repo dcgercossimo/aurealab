@@ -139,6 +139,7 @@ async function validateUniqueUsername(username) {
 }
 
 async function hashPasswordInObject(userInput) {
+  if (userInput.password === undefined) return;
   const hashedPassword = await password.hash(userInput.password);
   userInput.password = hashedPassword;
 }
