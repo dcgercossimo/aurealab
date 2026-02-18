@@ -38,6 +38,17 @@ async function readOneByUsername(username) {
   return userFound;
 }
 
+async function readOneByEmail(email) {
+  const userFound = await findOneByEmail(email);
+  if (!userFound) {
+    throw new NotFoundError({
+      message: 'Usuário não encontrado',
+      action: 'Verifique se o Email está correto e tente novamente',
+    });
+  }
+  return userFound;
+}
+
 async function update(username, userInputValues) {
   const currentUser = await readOneByUsername(username);
 
@@ -147,6 +158,7 @@ async function hashPasswordInObject(userInput) {
 const user = {
   create,
   readOneByUsername,
+  readOneByEmail,
   update,
 };
 
