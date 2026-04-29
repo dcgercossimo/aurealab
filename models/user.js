@@ -27,6 +27,17 @@ async function create(userInput) {
   }
 }
 
+async function readOneById(id) {
+  const userFound = await findOneById(id);
+  if (!userFound) {
+    throw new NotFoundError({
+      message: 'Usuário não encontrado',
+      action: 'Verifique se os dados do usuário estão corretos e tente novamente',
+    });
+  }
+  return userFound;
+}
+
 async function readOneByUsername(username) {
   const userFound = await findOneByUsername(username);
   if (!userFound) {
@@ -95,7 +106,7 @@ async function update(username, userInputValues) {
   }
 }
 
-async function findOneByEmail(email) {
+async function findOneById(id) {
   const results = await database.query({
     text: `
       SELECT
@@ -103,11 +114,11 @@ async function findOneByEmail(email) {
       FROM
         users
       WHERE
-        email = LOWER($1)
+        id = $1
       LIMIT
         1
       ;`,
-    values: [email],
+    values: [id],
   });
   return results.rows[0];
 }
@@ -125,6 +136,23 @@ async function findOneByUsername(username) {
         1
       ;`,
     values: [username],
+  });
+  return results.rows[0];
+}
+
+async function findOneByEmail(email) {
+  const results = await database.query({
+    text: `
+      SELECT
+        id, username, email, password, created_at, updated_at
+      FROM
+        users
+      WHERE
+        email = LOWER($1)
+      LIMIT
+        1
+      ;`,
+    values: [email],
   });
   return results.rows[0];
 }
@@ -157,6 +185,7 @@ async function hashPasswordInObject(userInput) {
 
 const user = {
   create,
+  readOneById,
   readOneByUsername,
   readOneByEmail,
   update,
